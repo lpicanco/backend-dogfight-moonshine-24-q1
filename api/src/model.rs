@@ -24,10 +24,13 @@ pub struct AccountBalance {
     pub limite: i32,
 }
 
-#[derive(Serialize, Deserialize)] //sqlx::FromRow,
+#[derive(Serialize, Deserialize)]
 pub struct TransactionDetail {
     pub valor: i32,
     pub tipo: String,
     pub descricao: String,
     pub realizada_em: String,
+    // #[serde(skip_serializing)]
+    // todo: remove
+    pub balance: i32,
 }

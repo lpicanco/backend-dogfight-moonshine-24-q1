@@ -8,6 +8,7 @@ pub struct Put {
     partition_name: String,
     key: String,
     data: Vec<u8>,
+    unlock: bool,
 }
 
 // echo '4303414243024241704156' | xxd -r -p | nc localhost 9942
@@ -25,10 +26,13 @@ impl Put {
         let mut data = vec![0; data_size as usize];
         stream.read_exact(&mut data).await?;
 
+        let unlock = stream.read_u8().await?;
+
         return Ok(Put {
             partition_name: String::from_utf8(partition_name).unwrap().trim_end().to_string(),
             key: String::from_utf8(key).unwrap().trim_end().to_string(),
-            data
+            data,
+            unlock: unlock == 1,
         });
     }
 
@@ -36,8 +40,8 @@ impl Put {
         // self.data
         // let partition_name = String::from_utf8(self.data[1..].to_vec()).unwrap();
         // info!("OpenPartition::execute: {:?}", partition_name.trim_end());
-        info!("Put::execute: partition_name: {:?}, key: {:?}, data: {:?}", self.partition_name, self.key, self.data);
-        db.clone().write_to_partition(self.partition_name, self.key, self.data).await?;
+        info!("Put::execute: partition_name: {:?}, key: {:?}, data: {:?}, unlock: {:?}", self.partition_name, self.key, self.data, self.unlock);
+        db.clone().write_to_partition(self.partition_name, self.key, self.data, self.unlock).await?;
         Ok(())
     }
 }

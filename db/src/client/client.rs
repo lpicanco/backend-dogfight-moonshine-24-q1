@@ -29,7 +29,7 @@ impl Client {
         Ok(())
     }
 
-    pub async fn put(&mut self, partition: &str, key: &str, value: Vec<u8>) -> crate::Result<()> {
+    pub async fn put(&mut self, partition: &str, key: &str, value: Vec<u8>, unlock: bool) -> crate::Result<()> {
         self.stream.write_u8(crate::cmd::CMD_PUT_OPCODE).await?;
         self.stream.write_u8(partition.len() as u8).await?;
         self.stream.write_all(partition.as_bytes()).await?;
@@ -39,6 +39,7 @@ impl Client {
 
         self.stream.write_u16(value.len() as u16).await?;
         self.stream.write_all(&value).await?;
+        self.stream.write_u8(unlock as u8).await?;
         self.stream.flush().await?;
         Ok(())
     }
@@ -52,6 +53,29 @@ impl Client {
         self.stream.write_all(key.as_bytes()).await?;
         self.stream.flush().await?;
         Ok(self.read_response().await?)
+    }
+
+    pub async fn get_latest(&mut self, partition: &str, lock: bool) -> crate::Result<Option<Vec<u8>>> {
+        self.stream.write_u8(crate::cmd::CMD_GET_LATEST_OPCODE).await?;
+        self.stream.write_u8(partition.len() as u8).await?;
+        self.stream.write_all(partition.as_bytes()).await?;
+
+        self.stream.write_u8(lock as u8).await?;
+        self.stream.flush().await?;
+
+        return match self.read_response().await? {
+            response if response.is_empty() => Ok(None),
+            response => Ok(Some(response)),
+        };
+    }
+
+    pub async fn unlock(&mut self, partition: &str) -> crate::Result<()> {
+        self.stream.write_u8(crate::cmd::CMD_UNLOCK_OPCODE).await?;
+        self.stream.write_u8(partition.len() as u8).await?;
+        self.stream.write_all(partition.as_bytes()).await?;
+        self.stream.flush().await?;
+
+        return Ok(());
     }
 
     pub async fn get_last(&mut self, partition: &str, count: u16) -> crate::Result<Vec<Vec<u8>>> {

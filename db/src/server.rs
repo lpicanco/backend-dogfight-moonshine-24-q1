@@ -128,9 +128,14 @@ impl Handler {
             info!("cmd_op: {:?}", cmd_op[0]);
             // let mut cmd = Command::from_data(&mut self.stream).await?;
             // let mut cmd = Command::from_data(buf[0..n].to_vec()).await?;
-            let cmd = Command::from_data(cmd_op[0], &mut self.stream).await?;
-            cmd.execute(&self.db, &mut self.stream).await?;
+            let cmd = Command::from_data(cmd_op[0], &mut self.stream).await;
 
+            match cmd {
+                Ok(cmd) => cmd.execute(&self.db, &mut self.stream).await?,
+                Err(e) => {
+                    return Err(e);
+                }
+            }
 
             // info!("data: {:?}", &buf[0..n]);
 
