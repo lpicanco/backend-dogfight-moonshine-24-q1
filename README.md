@@ -1,11 +1,11 @@
 # Rinha de Backend 2024 - Q1 - Moonshine edition
 
-![Moonshine Logo](img/moonshine-logo.webp)
+<img src="img/moonshine-logo.webp" width="640"/>
 
 ## Stack
 
 Base:
-- Rust
+- Rust 🦀
 - Tokio
 - Axum
 
@@ -15,12 +15,12 @@ Load balancer e banco de dados próprios.
 
 ### Moonshine Database
 
-![Moonshine-db Logo](img/moonshine-db-logo.webp)
+<img src="img/moonshine-db-logo.webp" width="320"/>
 
 ### Moonshine Load balancer
 
-![Moonshine-loadbalancer Logo](img/moonshine-loadbalancer-logo.webp)
+<img src="img/moonshine-loadbalancer-logo.webp" width="320"/>
 
 ### Moonshine API
 
-![Moonshine-api Logo](img/moonshine-api-logo.webp)
+<img src="img/moonshine-api-logo.webp" width="320"/>
