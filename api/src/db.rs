@@ -31,13 +31,9 @@ lazy_static! {
 impl TransactionDetail {
     pub async fn store(&self, mut conn: Object<Manager>, client_id: i32) {
         let serialized = bincode::serialize(self).unwrap();
-        // println!("{}", Self::generate_id(client_id));
         conn.put(Self::get_partition(client_id),
                  &format!("{}_{}", client_id,
-                     Self::generate_id(client_id)
-                            // self.realizada_em
-                          // Uuid::now_v7().as_u128()
-                          // Uuid::now_v7().as_u64_pair().1
+                          Self::generate_id(client_id)
                  ),
                  serialized, true).await.unwrap();
     }
@@ -48,21 +44,21 @@ impl TransactionDetail {
         let day = now.day() as u8;
         let hour = now.hour() as u8;
         let min = now.minute() as u8;
-
         let sec = now.second() as u8;
         let nano = now.timestamp_subsec_nanos();
 
-        // let mut rng = rand::thread_rng();
-        // let random = rng.gen::<u16>();
+        let mut rng = rand::thread_rng();
+        let random = rng.gen::<u16>();
 
         format!(
-            "{}{}{}{}{}{}", //{:0>4}
+            "{}{}{}{}{}{}{:0>4}", //{:0>4}
             client_id as u8,
             day,
             hour,
             min,
             sec,
-            nano)
+            nano,
+            random)
             .into()
     }
 
@@ -105,7 +101,7 @@ pub(crate) async fn create_transaction(
         Some(item) => {
             let detail: TransactionDetail = bincode::deserialize(&item).unwrap();
             detail.balance
-        },
+        }
         None => 0,
     };
 
@@ -120,7 +116,7 @@ pub(crate) async fn create_transaction(
         tipo: transaction_raw.tipo.clone().unwrap(),
         descricao: transaction_raw.descricao.clone().unwrap(),
         realizada_em: chrono::Utc::now().to_rfc3339(),
-        balance: last_balance + value_with_sign
+        balance: last_balance + value_with_sign,
     };
 
     let (balance, limit) = (transaction.balance, *LIMITS.get(&client_id).unwrap());

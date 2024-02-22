@@ -22,7 +22,7 @@ async fn main() {
     let manager = Manager::new(moonshine_url);
 
     let pool = Pool::builder(manager)
-        .max_size(20) //15
+        .max_size(15)
         .runtime(Runtime::Tokio1)
         .build()
         .unwrap();
@@ -37,6 +37,7 @@ async fn main() {
 
     let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{}", port))
         .await.unwrap();
+    println!("⚗️ 🥂moonshine-api running at http://localhost:{}/", port);
 
     axum::serve(listener, app.into_make_service())
         .await.unwrap();

@@ -1,7 +1,7 @@
 FROM rust:slim-bullseye as builder
 WORKDIR /app
-RUN USER=root cargo new moonshine-db
-WORKDIR /app/moonshine-db
+RUN USER=root cargo new moonshine-lb
+WORKDIR /app/moonshine-lb
 COPY Cargo.toml ./
 RUN cargo build --release
 RUN rm -rf src
@@ -13,6 +13,6 @@ RUN cargo build --release
 
 
 FROM debian:bullseye-slim
-COPY --from=builder /app/moonshine-db/target/release/moonshine-db /usr/local/bin/
+COPY --from=builder /app/moonshine-lb/target/release/moonshine-lb /usr/local/bin/
 
-CMD ["moonshine-db"]
+CMD ["moonshine-lb"]

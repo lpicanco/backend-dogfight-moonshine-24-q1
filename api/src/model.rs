@@ -30,7 +30,5 @@ pub struct TransactionDetail {
     pub tipo: String,
     pub descricao: String,
     pub realizada_em: String,
-    // #[serde(skip_serializing)]
-    // todo: remove
     pub balance: i32,
 }

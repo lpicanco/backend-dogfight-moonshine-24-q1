@@ -26,7 +26,7 @@ impl Db {
         let partition = state.keyspace
             .open_partition(&name,
                             PartitionCreateOptions::default()
-                                .level_count(128), //255
+                                .level_count(255),
             )
             .unwrap();
 
@@ -102,8 +102,7 @@ impl Db {
         Db {
             shared: RwLock::new(DbState {
                 keyspace: Config::new(path)
-                    .fsync_ms(Some(60_000))
-                    // .fsync_ms(Some(1000))
+                    .fsync_ms(Some(30_000))
                     .block_cache(Arc::new(fjall::BlockCache::with_capacity_bytes(/* 32 MiB */ 32 * 1_024 * 1_024)))
                     .compaction_workers(1)
                     .open().unwrap(),

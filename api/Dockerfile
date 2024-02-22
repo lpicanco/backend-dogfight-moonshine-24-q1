@@ -2,7 +2,6 @@ FROM rust:slim-bullseye as builder
 WORKDIR /app
 RUN USER=root cargo new backend-dogfight-moonshine-24-q1-api
 WORKDIR /app/backend-dogfight-moonshine-24-q1-api
-#COPY Cargo.toml Cargo.lock ./
 COPY Cargo.toml ./
 RUN cargo build --release
 RUN rm -rf src
