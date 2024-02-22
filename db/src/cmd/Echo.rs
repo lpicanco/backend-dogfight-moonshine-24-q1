@@ -7,7 +7,6 @@ pub struct Echo {
 }
 
 impl Echo {
-    // pub(crate) async fn parse_data(mut data: &mut BufWriter<TcpStream>) -> crate::Result<Echo> {
     pub(crate) async fn parse_data(stream: &mut BufWriter<TcpStream>) -> crate::Result<Echo> {
         let data_size = stream.read_u16().await?;
         info!("data_size: {:?}", data_size);
@@ -20,8 +19,6 @@ impl Echo {
     }
 
     pub(crate) async fn execute(&self, buffer: &mut BufWriter<TcpStream>) -> crate::Result<()> {
-        info!("Echo::execute: {:?}", &self.data);
-
         let response = format!("PONG: {}", String::from_utf8(self.data.clone()).unwrap());
         buffer.write_u16(response.len() as u16).await?;
 
@@ -30,7 +27,6 @@ impl Echo {
             .await
             .expect("failed to write data to socket");
 
-        info!("Echo::complete: {:?}", &self.data);
         Ok(())
     }
 }
