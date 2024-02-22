@@ -1,6 +1,6 @@
-use log::info;
 use tokio::io::{AsyncReadExt, AsyncWriteExt, BufWriter};
 use tokio::net::TcpStream;
+
 use crate::db::Db;
 
 pub struct GetLast {
@@ -23,9 +23,9 @@ impl GetLast {
     }
 
     pub(crate) async fn execute(self, buffer: &mut BufWriter<TcpStream>, db: &Db) -> crate::Result<()> {
-        info!("GetLast::execute: partition_name: {:?}, count: {:?}", self.partition_name, self.count);
+        // info!("GetLast::execute: partition_name: {:?}, count: {:?}", self.partition_name, self.count);
 
-        let data = db.clone().read_last_from_partition(self.partition_name, self.count).await?;
+        let data = db.read_last_from_partition(self.partition_name, self.count).await?;
         buffer.write_u16(data.len() as u16).await?;
 
         for d in data {

@@ -1,4 +1,3 @@
-use log::info;
 use tokio::io::{AsyncReadExt, BufWriter};
 use tokio::net::TcpStream;
 
@@ -11,7 +10,6 @@ pub struct Put {
     unlock: bool,
 }
 
-// echo '4303414243024241704156' | xxd -r -p | nc localhost 9942
 impl Put {
     pub(crate) async fn parse_data(stream: &mut BufWriter<TcpStream>) -> crate::Result<Put> {
         let partition_name_size = stream.read_u8().await?;
@@ -37,11 +35,8 @@ impl Put {
     }
 
     pub(crate) async fn execute(self, db: &Db) -> crate::Result<()> {
-        // self.data
-        // let partition_name = String::from_utf8(self.data[1..].to_vec()).unwrap();
-        // info!("OpenPartition::execute: {:?}", partition_name.trim_end());
-        info!("Put::execute: partition_name: {:?}, key: {:?}, data: {:?}, unlock: {:?}", self.partition_name, self.key, self.data, self.unlock);
-        db.clone().write_to_partition(self.partition_name, self.key, self.data, self.unlock).await?;
+        // info!("Put::execute: partition_name: {:?}, key: {:?}, data: {:?}, unlock: {:?}", self.partition_name, self.key, self.data, self.unlock);
+        db.write_to_partition(self.partition_name, self.key, self.data, self.unlock).await?;
         Ok(())
     }
 }

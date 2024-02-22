@@ -30,7 +30,6 @@ async fn main() {
     let port = env::var("PORT").unwrap_or("9999".to_string());
     db::init(&mut pool.get().await.unwrap()).await;
 
-    // let state_guard = Arc::new(moonshine);
     let app = Router::new()
         .route("/clientes/:client_id/extrato", get(account_statement_handler::handle))
         .route("/clientes/:client_id/transacoes", post(transaction_handler::handle))

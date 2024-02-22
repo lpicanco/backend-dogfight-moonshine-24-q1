@@ -1,6 +1,7 @@
 use log::info;
 use tokio::io::{AsyncReadExt, BufWriter};
 use tokio::net::TcpStream;
+
 use crate::db::Db;
 
 pub struct Unlock {
@@ -21,7 +22,7 @@ impl Unlock {
     pub(crate) async fn execute(self, db: &Db) -> crate::Result<()> {
         info!("Unlock::execute: partition_name: {:?}", self.partition_name);
 
-        db.clone().unlock(self.partition_name).await;
+        db.unlock(self.partition_name).await;
         Ok(())
     }
 }

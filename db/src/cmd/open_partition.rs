@@ -1,6 +1,6 @@
-use log::info;
 use tokio::io::{AsyncReadExt, BufWriter};
 use tokio::net::TcpStream;
+
 use crate::db::Db;
 
 pub struct OpenPartition {
@@ -20,8 +20,7 @@ impl OpenPartition {
 
     pub(crate) async fn execute(self, db: &Db) -> crate::Result<()> {
         let partition_name = String::from_utf8(self.data).unwrap();
-        info!("OpenPartition::execute: {:?}", partition_name.trim_end());
-
-        db.clone().open_partition(partition_name.trim_end().to_string()).await
+        // info!("OpenPartition::execute: {:?}", partition_name.trim_end());
+        db.open_partition(partition_name.trim_end().to_string()).await
     }
 }

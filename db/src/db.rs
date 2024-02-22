@@ -1,16 +1,12 @@
 use std::collections::HashMap;
 use std::path::Path;
-use std::sync::{Arc};
+use std::sync::Arc;
+
 use fjall::{Config, Keyspace, PartitionCreateOptions, PartitionHandle};
 use tokio::sync::{RwLock, Semaphore};
 
-#[derive(Clone)]
 pub(crate) struct Db {
-    shared: Arc<RwLock<DbState>>,
-    // state: Mutex<DbState>,
-    // data: HashMap<String, String>,
-    // keyspace: Keyspace,
-    // partitions: HashMap<String, PartitionHandle>,
+    shared: RwLock<DbState>,
 }
 
 struct DbState {
@@ -23,7 +19,6 @@ struct Partition {
     write_lock: Semaphore,
 }
 
-
 impl Db {
     pub(crate) async fn open_partition(&self, name: String) -> crate::Result<()> {
         let mut state = self.shared.write().await;
@@ -31,7 +26,7 @@ impl Db {
         let partition = state.keyspace
             .open_partition(&name,
                             PartitionCreateOptions::default()
-                                .level_count(255)
+                                .level_count(128), //255
             )
             .unwrap();
 
@@ -69,7 +64,6 @@ impl Db {
         }
     }
 
-
     pub(crate) async fn read_from_partition(&self, partition_name: String, key: String) -> crate::Result<Vec<u8>> {
         let state = self.shared.read().await;
         let partition = state.partitions.get(&partition_name).unwrap();
@@ -99,36 +93,22 @@ impl Db {
             .map(|item| item.unwrap().1.to_vec())
             .collect::<Vec<_>>();
         drop(state);
-        Ok(
-            values
-        )
+        Ok(values)
     }
 }
 
 impl Db {
     pub fn new<P: AsRef<Path>>(path: P) -> Db {
         Db {
-            shared: Arc::new(
-                RwLock::new(DbState {
-                    keyspace: Config::new(path)
-                        .fsync_ms(Some(60_000))
-                        // .fsync_ms(Some(1000))
-                        .block_cache(Arc::new(fjall::BlockCache::with_capacity_bytes(/* 32 MiB */ 32 * 1_024 * 1_024)))
-                        .compaction_workers(1)
-                        .open().unwrap(),
-                    partitions: HashMap::new(),
-                })
-            )
+            shared: RwLock::new(DbState {
+                keyspace: Config::new(path)
+                    .fsync_ms(Some(60_000))
+                    // .fsync_ms(Some(1000))
+                    .block_cache(Arc::new(fjall::BlockCache::with_capacity_bytes(/* 32 MiB */ 32 * 1_024 * 1_024)))
+                    .compaction_workers(1)
+                    .open().unwrap(),
+                partitions: HashMap::new(),
+            })
         }
     }
-
-    /*   pub fn open_partition(&mut self, name: &str) -> PartitionHandle {
-           let partition = self.keyspace.open_partition(name, Default::default()).unwrap();
-           self.partitions.insert(name.to_string(), partition);
-           partition
-       }
-
-       pub fn get_partition(&self, name: &str) -> &PartitionHandle {
-           self.partitions.get(name).unwrap()
-       }*/
 }
