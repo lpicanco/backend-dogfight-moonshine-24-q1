@@ -1,36 +1,45 @@
 use std::env;
 use std::error::Error;
+use std::sync::Arc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use deadpool::Runtime;
 use futures::FutureExt;
 use log::{error, warn};
+use pingora::prelude::{http_proxy_service, LoadBalancer, Opt, Server};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::io;
 use tokio::net::{TcpListener, TcpStream};
 
+use crate::load_balancer::LB;
 use crate::pool::{Manager, Pool, TcpConnWrapper};
 
 mod pool;
+mod load_balancer;
 
 static IDX: AtomicUsize = AtomicUsize::new(0);
 static MAX_POOL_SIZE: usize = 40;
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+fn main() {
     env::set_var("RUST_LOG", "warn");
     env_logger::init();
 
     let port = env::var("PORT").unwrap_or("9999".to_string());
-    let listener = TcpListener::bind(&format!("0.0.0.0:{}", port)).await?;
     println!("⚗️ 🛜moonshine-lb running at http://localhost:{}/", port);
+    
+    let mut my_server = Server::new(None).unwrap();
+    my_server.bootstrap();
 
-    tokio::spawn(async move {
-        tokio::signal::ctrl_c().await.unwrap();
-        std::process::exit(0)
-    });
+    let api01_host_port = env::var("API01_HOST_PORT").unwrap_or("localhost:3042".to_string());
+    let api02_host_port = env::var("API02_HOST_PORT").unwrap_or("localhost:3043".to_string());
 
-    run_server(listener).await
+    let upstreams =
+        LoadBalancer::try_from_iter([api01_host_port, api02_host_port]).unwrap();
+    let mut lb = http_proxy_service(&my_server.configuration, LB(Arc::new(upstreams)));
+    lb.add_tcp(format!("0.0.0.0:{}", port).as_str());
+
+    my_server.add_service(lb);
+    my_server.run_forever();
 }
 
 async fn run_server(listener: TcpListener) -> Result<(), Box<dyn Error>> {

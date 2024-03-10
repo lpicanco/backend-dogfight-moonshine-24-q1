@@ -2,6 +2,7 @@ FROM rust:slim-bullseye as builder
 WORKDIR /app
 RUN USER=root cargo new moonshine-lb
 WORKDIR /app/moonshine-lb
+RUN apt update && apt install libfindbin-libs-perl cmake make g++ openssl libssl-dev pkg-config -y
 COPY Cargo.toml ./
 RUN cargo build --release
 RUN rm -rf src
