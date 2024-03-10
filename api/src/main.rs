@@ -12,17 +12,16 @@ mod db;
 mod model;
 mod transaction_handler;
 
-
 #[tokio::main]
 async fn main() {
-    env::set_var("RUST_LOG", "info");
+    env::set_var("RUST_LOG", "warn");
     env_logger::init();
 
     let moonshine_url = env::var("DATABASE_URL").unwrap_or("localhost:9942".to_string());
     let manager = Manager::new(moonshine_url);
 
     let pool = Pool::builder(manager)
-        .max_size(15)
+        .max_size(60)
         .runtime(Runtime::Tokio1)
         .build()
         .unwrap();
@@ -39,6 +38,5 @@ async fn main() {
         .await.unwrap();
     println!("⚗️ 🥂moonshine-api running at http://localhost:{}/", port);
 
-    axum::serve(listener, app.into_make_service())
-        .await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
